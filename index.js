@@ -17,16 +17,47 @@ const bot = new TelegramBot (TOKEN, {
     }
 })
 
-
-
 bot.on('message', (msg) => {
-    
-    setTimeout(() => {
-        bot.sendMessage(msg.chat.id, 'https://learn.javascript.ru/json')
-        }, 4000)
+    const chatId = msg.chat.id
+
+    if (msg.text === 'Закрыть') {    
+        bot.sendMessage(chatId, 'Закрываю клавиатуру', {
+            reply_markup: {
+                remove_keyboard: true
+            }
+        })
+
+    } else if (msg.tex === 'Ответить') {
+        bot.sendMessage(chatId, 'Отвечаю', {
+            reply_markup: {
+                force_reply: true
+            }
+        })
+
+    } else {
+        bot.sendMessage(chatId, 'Клавиатура', {
+            reply_markup: {
+                keyboard: [
+                    ['Отправить местоположение'],
+                    ['Ответить', 'Закрыть'],
+                    ['Отправить контакт']
+                ]
+            }
+        })
+    }
     })
 
 
+
+
+/*
+bot.on('message', (msg) => {
+    
+    setTimeout(() => {
+        bot.sendMessage(msg.chat.id, 'test')
+        }, 4000)
+    })
+*/
 /*
 bot.on('message', (msg) => {
     
