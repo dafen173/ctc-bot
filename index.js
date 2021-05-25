@@ -19,28 +19,3 @@ const bot = new TelegramBot (TOKEN, {
 
 const debug = require( './helpers' );
 
-
-bot.on('message', (msg) => {
-    
-    bot.sendMessage(msg.chat.id, 'Inline keybord', {
-       reply_markup: {
-           inline_keyboard:[
-              [
-                {
-                    text: 'First',
-                    callback_data: '1'
-                }
-              ],
-              [
-                {
-                    text: 'Second',
-                    callback_data: '1'
-                } 
-              ]
-           ]
-       }        
-    })
-})
-
-
-
