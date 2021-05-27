@@ -22,21 +22,21 @@ const bot = new TelegramBot (TOKEN, {
 const inlineKeys = [
     [
         {
-            text: 'Forward777',
-            callback_data: ''
+            text: 'Forward',
+            callback_data: 'forward'
         },
         {
-            text: 'Reply8888',
+            text: 'Reply',
             callback_data: 'reply'
         }
     ], 
     [
         {
-            text: 'Edit888',
+            text: 'Edit',
             callback_data: 'edit'
         },
         {
-            text: 'Delete6666',
+            text: 'Delete',
             callback_data: 'delete'
         }   
     ]
