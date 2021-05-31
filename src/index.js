@@ -1,12 +1,21 @@
 // ctc-bot
 
 const TelegramBot = require('node-telegram-bot-api');
+const mongoose = require('mongoose')
 const config = require('./config')
 const helper = require('./helper')
 const keyboard = require('./keyboard')
 const kb = require('./keyboard-buttons')
 
 helper.logStart()
+
+mongoose.connect(config.DB_URL, {
+    useMongoClient: true
+})
+  .then(() => console.console.log('MongoDB connected'))
+  .catch((err) => console.log(err))
+
+
 
 const bot = new TelegramBot (config.TOKEN, {
     polling: true
