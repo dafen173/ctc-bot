@@ -6,14 +6,28 @@ const config = require('./config')
 const helper = require('./helper')
 const keyboard = require('./keyboard')
 const kb = require('./keyboard-buttons')
+const database = require('../database.json')
+
+
 
 helper.logStart()
 
 mongoose.connect(config.DB_URL, {
-    useMongoClient: true
+    //useMongoClient: true
+    useNewUrlParser: true,
+    useUnifiedTopology: true
 })
-  .then(() => console.console.log('MongoDB connected'))
+  .then(() => console.log('MongoDB connected'))
   .catch((err) => console.log(err))
+
+require('./models/film.model')
+
+const Film = mongoose.model('films')
+
+//database.films.forEach(f => new Film(f).save())
+
+
+// =========================================================================
 
 
 
@@ -28,11 +42,23 @@ bot.on('message', msg => {
     switch (msg.text) {
         case kb.home.favourite:
             break
+        
+        
         case kb.home.films:
             bot.sendMessage(chatId, `Выберите жанр:`, {
                 reply_markup: {keyboard: keyboard.films}
             })
             break
+        case kb.film.comedy:
+            sendFilmByQuery(chatId, {type: 'comedy'})
+            break
+        case kb.film.action:
+            sendFilmByQuery(chatId, {type: 'action'})
+            break
+        case kb.film.random:
+            sendFilmByQuery(chatId, {})
+            break
+
         case kb.home.cinemas:
             break   
         case kb.back:
@@ -55,9 +81,42 @@ bot.onText(/\/start/, msg => {
     })
 })
 
+bot.onText(/\/f(.+)/, (msg, [source, match]) => {
+    const filmUuid = helper.getItemUuid(source)
+    console.log(filmUuid)
+
+})
 
 
 
 
+
+//===========================================
+
+
+function sendFilmByQuery(chatId, query) {
+    Film.find(query).then(films => {
+        //console.log(films)
+
+        const html = films.map((f, i) => {
+            return `<b>${i + 1}</b> ${f.name} - /f${f.uuid}`
+        }).join('\n')
+
+        sendHTML (chatId, html, 'films')
+    })
+}
+
+
+function sendHTML (chatId, html, kbName = null) {
+    const options = {
+        parse_mode: 'HTML'
+    }
+    if (kbName) {
+        options['reply_markup'] = {
+            keyboard: keyboard[kbName]
+        }
+    }
+    bot.sendMessage(chatId, html, options)
+}
 
 
