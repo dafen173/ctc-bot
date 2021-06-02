@@ -1,5 +1,21 @@
 
 
+db.users.insertMany([
+    {
+        films: 'Сейчас в кино', 
+        favourite: 'Избранное',
+        cinemas: 'Кинотеатры'
+    },
+    {
+        random:'Случайный жанр',
+        action: 'Боевик',
+        comedy: 'Комедия'
+    }
+])
+
+
+
+
 
 
 
