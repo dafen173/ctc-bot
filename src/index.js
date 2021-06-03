@@ -83,11 +83,22 @@ bot.onText(/\/start/, msg => {
 
 bot.onText(/\/f(.+)/, (msg, [source, match]) => {
     const filmUuid = helper.getItemUuid(source)
-    console.log(filmUuid)
+    const chatId = helper.getChatId(msg)
 
+    Film.findOne({uuid: filmUuid}).then(film => {
+        
+        const caption = `Название: ${film.name}\nГод: ${film.year}\nРейтинг: ${film.rate}\nДлительность: ${film.length}`
+        
+        //bot.sendPhoto(chatId, film.picture, {
+           // caption: caption
+        //})
+
+        bot.sendPhoto(chatId, film.picture)
+
+    }).catch((error) => {
+        console.error(error);
+    })
 })
-
-
 
 
 
@@ -118,5 +129,7 @@ function sendHTML (chatId, html, kbName = null) {
     }
     bot.sendMessage(chatId, html, options)
 }
+
+
 
 
