@@ -2,6 +2,8 @@
 
 const TelegramBot = require('node-telegram-bot-api');
 const mongoose = require('mongoose')
+const geolib = require('geolib')
+const _ = require('lodash')
 const config = require('./config')
 const helper = require('./helper')
 const keyboard = require('./keyboard')
@@ -21,11 +23,14 @@ mongoose.connect(config.DB_URL, {
   .catch((err) => console.log(err))
 
 require('./models/film.model')
+require('./models/cinema.model')
 
 const Film = mongoose.model('films')
+const Cinema = mongoose.model('cinemas')
 
-//database.films.forEach(f => new Film(f).save())
 
+//database.films.forEach(f => new Film(f).save().catch(e => console.log(e)))
+//database.cinemas.forEach(c => new Cinema(c).save().catch(e => console.log(e)))
 
 // =========================================================================
 
@@ -41,9 +46,7 @@ bot.on('message', msg => {
 
     switch (msg.text) {
         case kb.home.favourite:
-            break
-        
-        
+            break          
         case kb.home.films:
             bot.sendMessage(chatId, `Выберите жанр:`, {
                 reply_markup: {keyboard: keyboard.films}
@@ -58,14 +61,23 @@ bot.on('message', msg => {
         case kb.film.random:
             sendFilmByQuery(chatId, {})
             break
-
         case kb.home.cinemas:
-            break   
+            bot.sendMessage(chatId, `Отправить местоположение`, {
+                reply_markup: {
+                    keyboard: keyboard.cinemas
+                }
+            })
+            break
         case kb.back:
             bot.sendMessage(chatId, `Что хотите посмотреть?`, {
                 reply_markup: {keyboard: keyboard.home}
             })
             break
+    }
+
+    if (msg.location) {
+        //console.log(msg.location)
+        getCinemasInCoord(chatId, msg.location)
     }
 })
 
@@ -89,16 +101,40 @@ bot.onText(/\/f(.+)/, (msg, [source, match]) => {
         
         const caption = `Название: ${film.name}\nГод: ${film.year}\nРейтинг: ${film.rate}\nДлительность: ${film.length}`
         
-        //bot.sendPhoto(chatId, film.picture, {
-           // caption: caption
-        //})
-
-        bot.sendPhoto(chatId, film.picture)
-
-    }).catch((error) => {
-        console.error(error);
+        bot.sendPhoto(chatId, film.picture, {
+           caption: caption,
+           reply_markup: {
+               inline_keyboard: [
+                   [
+                        {
+                            text: 'Добавить в избранное',
+                            callback_data: film.uuid
+                        },
+                        {
+                            text:'Показать кинотеатры',
+                            callback_data: film.uuid
+                        }
+                   ],
+                   [
+                        {
+                            text: `Кинопоиск ${film.name}`,
+                            url: film.link
+                        }
+                   ]
+               ]
+           }
+        })
     })
 })
+
+bot.onText(/\/c(.+)/, (msg, [source, match]) => {
+    const cinemaUuid = helper.getItemUuid(source)
+
+    Cinema.findOne({uuid: cinemaUuid}).then(cinema => {
+        console.log(cinema)
+    })
+})
+
 
 
 
@@ -116,8 +152,6 @@ function sendFilmByQuery(chatId, query) {
         sendHTML (chatId, html, 'films')
     })
 }
-
-
 function sendHTML (chatId, html, kbName = null) {
     const options = {
         parse_mode: 'HTML'
@@ -130,6 +164,21 @@ function sendHTML (chatId, html, kbName = null) {
     bot.sendMessage(chatId, html, options)
 }
 
+function getCinemasInCoord(chatId, location) {
+    Cinema.find({}).then(cinemas => {
 
+        cinemas.forEach(c => {
+            c.distance = geolib.getDistance(location, c.location) / 1000
+        })
+
+        cinemas = _.sortBy(cinemas, 'distance')
+
+        const html = cinemas.map((c, i) => {
+            return `<b>${i + 1}</b> ${c.name}. <em>Расстояние</em> - <strong>${c.distance}</strong> км. /c${c.uuid}`
+        }).join('\n')
+
+        sendHTML(chatId, html, 'home')
+    })
+}
 
 

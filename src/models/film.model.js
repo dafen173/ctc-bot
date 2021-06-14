@@ -29,7 +29,7 @@ const FilmSchema = new Schema ({
     link: {
         type: String
     },
-    pictures: {
+    picture: {
         type: String
     },
     cinemas: {

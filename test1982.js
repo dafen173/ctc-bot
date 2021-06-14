@@ -2,6 +2,8 @@
 
 //cd C:\Program Files\MongoDB\Server\3.6\bin
 
+//http://www.avscreen.com.ua/images/manual.png
+
 
 
 
