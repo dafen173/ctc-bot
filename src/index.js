@@ -136,9 +136,9 @@ bot.onText(/\/f(.+)/, (msg, [source, match]) => {
                         },
                         {
                             text:'Показать кинотеатры',
-                            callback_data: JSON.stringify({
+                            callback_data: JSON.stringify({                             
                                 type: ACTION_TYPE.SHOW_CINEMAS,
-                                cinemaUuids: film.cinemas
+                                cinemaUuids: film.cinemas,
                             })
                         }
                    ],
@@ -196,10 +196,10 @@ bot.onText(/\/c(.+)/, (msg, [source, match]) => {
 
 bot.on('callback_query', query => {
     const userId = query.from.id
+
     let data
-    
     try {
-        data = JSON.parce(query.data)
+        data = JSON.parse(query.data)
     } catch (e) {
         throw new Error ('Data is not an object')
     }
@@ -208,15 +208,13 @@ bot.on('callback_query', query => {
 
     if (type === ACTION_TYPE.SHOW_CINEMAS_MAP) {
 
-    } else if (type === ACTION_TYPE.SHOW_CINEMAS) {
+    } else if (type === ACTION_TYPE.SHOW_CINEMAS) {      
 
     } else if (type === ACTION_TYPE.TOGGLE_FAV_FILM) {
-        toggleFavoriteFilm(userId, query.id, data)
+        toggleFavouriteFilm(userId, query.id, data)     
     } else if (type === ACTION_TYPE.SHOW_FILMS) {
         
-    }
-    
-    console.log(query.data)
+    }   
 })
 
 
@@ -266,38 +264,32 @@ function getCinemasInCoord(chatId, location) {
     })
 }
 
-function toggleFavoriteFilm(userId, queryId, {filmUuid, isFav}) {
-
+function toggleFavouriteFilm(userId, queryId, {filmUuid, isFav}) {      
+    
     let userPromise
-
     User.findOne({telegramId: userId})
     .then(user => {
-        if (user) {
-            if (isFav) {
-                user.films = user.films.filter(fUuid => fUuid !== filmUuid)
-            } else {
-                user.films.push(filmUuid)
-            }
-            userPromise = user
+      if (user) {
+        if (isFav) {
+          user.films = user.films.filter(fUuid => fUuid !== filmUuid)
         } else {
-            userPromise = new User({
-                telegramId: userId,
-                films: [filmUuid]
-            })
+          user.films.push(filmUuid)
         }
+        userPromise = user
+      } else {
+        userPromise = new User({
+          telegramId: userId,
+          films: [filmUuid]
+        })
+      }
 
-
-
-        const answerText = isFav ? 'Удалено' : 'Добавлено'
-        userPromise.save().then(_ => {
-            bot.answerCallbackQuery({
-                callback_query_id: queryId,
-                text: answerText
-            })
-        }).catch(err => console.log(err))
-
-    }).catch(err => console.log(err))
-}
-
+      const answerText = isFav ? `Удалено из избранного` : `Фильм добавлен в избранное`
+  
+      userPromise.save()
+      .then(_ => { bot.answerCallbackQuery(queryId, answerText) })
+      .catch(err => console.log(err))
+    })
+    .catch(err => console.log(err))
+  }
 
 
