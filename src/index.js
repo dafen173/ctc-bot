@@ -30,7 +30,7 @@ const Film = mongoose.model('films')
 const Cinema = mongoose.model('cinemas')
 const User = mongoose.model('users')
 
-//database.films.forEach(f => new Film(f).save().catch(e => console.log(e)))
+database.films.forEach(f => new Film(f).save().catch(e => console.log(e)))
 //database.cinemas.forEach(c => new Cinema(c).save().catch(e => console.log(e)))
 
 
@@ -55,6 +55,7 @@ bot.on('message', msg => {
 
     switch (msg.text) {
         case kb.home.favourite:
+            showFavouriteFilms(chatId, msg.from.id)
             break          
         case kb.home.films:
             bot.sendMessage(chatId, `Выберите жанр:`, {
@@ -290,6 +291,21 @@ function toggleFavouriteFilm(userId, queryId, {filmUuid, isFav}) {
       .catch(err => console.log(err))
     })
     .catch(err => console.log(err))
-  }
+}
+
+function showFavouriteFilms(chatId, telegramId) {
+    User.findOne(({telegramId}))
+    .then(user => {
+
+        if (user) {
+
+        } else {
+            sendHTML (chatId, 'Вы пока ничего не добавили', 'home')
+        }
+
+    })
+}
+
+
 
 
