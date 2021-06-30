@@ -208,13 +208,14 @@ bot.on('callback_query', query => {
     const { type } = data
 
     if (type === ACTION_TYPE.SHOW_CINEMAS_MAP) {
-
+        const {lat, lon} = data
+        bot.sendLocation(query.message.chat.id, lat, lon)
     } else if (type === ACTION_TYPE.SHOW_CINEMAS) {      
-
+        sendCinemasByQuery(userId, {uuid: {'$in': data.cinemaUuids}})
     } else if (type === ACTION_TYPE.TOGGLE_FAV_FILM) {
         toggleFavouriteFilm(userId, query.id, data)     
     } else if (type === ACTION_TYPE.SHOW_FILMS) {
-        
+        sendFilmByQuery(userId, {uuid: {'$in': data.filmUuids}})
     }   
 })
 
@@ -318,6 +319,15 @@ function showFavouriteFilms(chatId, telegramId) {
     }).catch(e => console.log(e))
 }
 
+function sendCinemasByQuery (userId, query) {
+    Cinema.find(query).then(cinemas => {
 
+        const html = cinemas.map((c, i) => {
+            return `<b>${i + 1}</b> ${c.name} - /c${c.uuid}`      
+        }).join('\n')
+
+        sendHTML(userId, html, 'home')
+    })
+}
 
 
